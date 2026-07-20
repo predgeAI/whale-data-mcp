@@ -1,0 +1,62 @@
+{
+  "name": "@predge/whale-data-mcp",
+  "version": "0.1.1",
+  "description": "MCP server exposing the Predge Whale Data x402 API (Polymarket whale trades + smart-money signals) as tools. Pays USDC per call under the hood via an x402 client; the operator supplies a funded buyer key.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Predge <hello@predge.io>",
+  "homepage": "https://github.com/predgeAI/whale-data-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/predgeAI/whale-data-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/predgeAI/whale-data-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "x402",
+    "polymarket",
+    "prediction-markets",
+    "whale-tracking",
+    "smart-money",
+    "agent",
+    "usdc",
+    "base",
+    "predge"
+  ],
+  "bin": {
+    "predge-whale-data-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/index.ts",
+    "inspect": "tsx src/dev-list-tools.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@x402/core": "~2.19.0",
+    "@x402/evm": "~2.19.0",
+    "@x402/fetch": "~2.19.0",
+    "viem": "^2.55.0",
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3"
+  }
+}
