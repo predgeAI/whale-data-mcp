@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.predgeai/whale-data-mcp",
+  "description": "Polymarket whale trades and smart-money signals as agent tools, paid per call via x402.",
+  "version": "0.1.1",
+  "websiteUrl": "https://data.predge.io",
+  "repository": {
+    "url": "https://github.com/predgeAI/whale-data-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@predge/whale-data-mcp",
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "BUYER_PRIVATE_KEY",
+          "description": "Funded Base-mainnet key that signs USDC micropayments. Required for paid tools; the free discovery tool works without it.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "X402_NETWORK",
+          "description": "x402 network: 'base' (mainnet, real USDC) or 'base-sepolia' (only against a testnet deployment).",
+          "format": "string"
+        },
+        {
+          "name": "MAX_PRICE_USD",
+          "description": "Hard per-call price cap in USD. Calls priced above it are refused before any payment. Default 0.05.",
+          "format": "string"
+        },
+        {
+          "name": "PREDGE_BASE_URL",
+          "description": "Override the API base URL. Defaults to the production deployment.",
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
