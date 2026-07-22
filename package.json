@@ -1,6 +1,6 @@
 {
   "name": "@predge/whale-data-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server exposing the Predge Whale Data x402 API (Polymarket whale trades + smart-money signals) as tools. Pays USDC per call under the hood via an x402 client; the operator supplies a funded buyer key.",
   "mcpName": "io.github.predgeai/whale-data-mcp",
   "type": "module",
