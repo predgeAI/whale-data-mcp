@@ -1,0 +1,68 @@
+name: Publish to npm + MCP Registry
+
+# Tag a release to publish: `git tag v0.1.1 && git push origin v0.1.1`
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC — how the MCP Registry verifies we own predgeAI/*
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org" # needed for NODE_AUTH_TOKEN
+
+      # Fail loudly on drift rather than publishing a mislabelled release:
+      # the MCP Registry looks up the npm version named in server.json, so all
+      # three (tag, package.json, server.json) must agree.
+      - name: Check tag matches package.json and server.json
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          PKG=$(jq -r .version package.json)
+          SRV=$(jq -r '.version, .packages[0].version' server.json | sort -u)
+          echo "tag=$TAG package.json=$PKG server.json=$SRV"
+          [ "$TAG" = "$PKG" ] || { echo "::error::tag v$TAG != package.json $PKG"; exit 1; }
+          [ "$SRV" = "$TAG" ] || { echo "::error::server.json versions ($SRV) != tag $TAG"; exit 1; }
+
+      # mcpName in the published package is what proves to the registry that we
+      # own @predge/whale-data-mcp. Without it, `mcp-publisher publish` fails.
+      - name: Check mcpName matches the server name
+        run: |
+          PKG_NAME=$(jq -r '.mcpName // ""' package.json)
+          SRV_NAME=$(jq -r .name server.json)
+          [ -n "$PKG_NAME" ] || { echo "::error::package.json has no mcpName"; exit 1; }
+          [ "$PKG_NAME" = "$SRV_NAME" ] || { echo "::error::mcpName $PKG_NAME != server.json name $SRV_NAME"; exit 1; }
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck --if-present
+
+      - name: Build package
+        run: npm run build --if-present
+
+      - name: Publish package to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish
