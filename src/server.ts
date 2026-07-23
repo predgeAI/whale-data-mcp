@@ -193,5 +193,93 @@ export function buildServer(): McpServer {
       paid(`/v1/attest/${encodeURIComponent(condition_id)}${side ? `?side=${side}` : ""}`),
   );
 
+  // --- full route parity (the rest of the paid Polymarket surface) --------
+  server.registerTool(
+    "predge_bets_biggest",
+    {
+      title: "Biggest single bets",
+      description:
+        "PAID (~$0.005). Top-20 largest single trades across all Polymarket markets in the window " +
+        "(market, side, size, price, wallet + score). Param: window (24h|7d, default 24h).",
+      inputSchema: { window: z.enum(["24h", "7d"]).optional() },
+    },
+    async ({ window }) => paid(`/v1/bets/biggest${window ? `?window=${window}` : ""}`),
+  );
+
+  server.registerTool(
+    "predge_signals_daily_category",
+    {
+      title: "24h digest for one category",
+      description:
+        "PAID (~$0.01). The 24h whale digest scoped to one market category (e.g. politics, economics, " +
+        "sports). Unknown category → 404 (not charged) with the known_categories list. Param: category.",
+      inputSchema: { category: z.string().min(1).max(64) },
+    },
+    async ({ category }) => paid(`/v1/signals/daily/${encodeURIComponent(category)}`),
+  );
+
+  server.registerTool(
+    "predge_signals_consensus_category",
+    {
+      title: "Smart-money consensus for one category",
+      description:
+        "PAID (~$0.02). Edge-verified smart-money consensus (net flow + direction) scoped to one " +
+        "category. Unknown category → 404 (not charged) with known_categories. Param: category.",
+      inputSchema: { category: z.string().min(1).max(64) },
+    },
+    async ({ category }) => paid(`/v1/signals/consensus/${encodeURIComponent(category)}`),
+  );
+
+  server.registerTool(
+    "predge_signals_market",
+    {
+      title: "Single-market smart-money verdict",
+      description:
+        "PAID (~$0.01). Single-market smart-money VERDICT — the \"should you trust this move?\" decision " +
+        "for one market: edge-verified smart flow, direction and confidence. Param: condition_id.",
+      inputSchema: { condition_id: CONDITION_ID },
+    },
+    async ({ condition_id }) => paid(`/v1/signals/market/${encodeURIComponent(condition_id)}`),
+  );
+
+  server.registerTool(
+    "predge_wallet_history",
+    {
+      title: "Wallet trade history + PnL curve",
+      description:
+        "PAID (~$0.02). One wallet's trade history with a running win-rate and modeled-PnL curve. " +
+        "Params: address (0x…), window (30d|90d|all, default 30d).",
+      inputSchema: { address: ADDRESS, window: z.enum(["30d", "90d", "all"]).optional() },
+    },
+    async ({ address, window }) =>
+      paid(`/v1/wallets/${encodeURIComponent(address)}/history${window ? `?window=${window}` : ""}`),
+  );
+
+  server.registerTool(
+    "predge_wallets_compare",
+    {
+      title: "Compare wallets side-by-side",
+      description:
+        "PAID (~$0.02). Side-by-side comparison of 2-10 wallets (scores, win rates, modeled PnL) plus " +
+        "their market overlap. Param: addresses (2-10 0x… addresses).",
+      inputSchema: { addresses: z.array(ADDRESS).min(2).max(10) },
+    },
+    async ({ addresses }) =>
+      paid(`/v1/wallets/compare?addresses=${addresses.map(encodeURIComponent).join(",")}`),
+  );
+
+  server.registerTool(
+    "predge_market_history",
+    {
+      title: "Market price/volume history",
+      description:
+        "PAID (~$0.01). Price/volume history for one Polymarket market in daily buckets (price " +
+        "normalized to the YES side) plus recent prints. Params: condition_id, window (7d|30d|all, default 30d).",
+      inputSchema: { condition_id: CONDITION_ID, window: z.enum(["7d", "30d", "all"]).optional() },
+    },
+    async ({ condition_id, window }) =>
+      paid(`/v1/markets/${encodeURIComponent(condition_id)}/history${window ? `?window=${window}` : ""}`),
+  );
+
   return server;
 }

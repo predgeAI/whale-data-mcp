@@ -38,7 +38,7 @@ claude mcp add predge-whale-data \
 }
 ```
 
-That's it — the agent gets **9 tools** (8 paid routes + 1 free discovery tool).
+That's it — the agent gets **16 tools** (15 paid routes + 1 free discovery tool).
 No API keys, no account; the buyer key pays USDC per call on Base. Fund it with a
 few dollars of USDC (the facilitator pays gas, so no ETH needed).
 
@@ -53,10 +53,19 @@ few dollars of USDC (the facilitator pays gas, so no ETH needed).
 | `predge_wallets_leaderboard` | ~$0.01 | Wallets by realized win rate. Params: `window` (7d\|30d), `limit` |
 | `predge_wallet_profile` | ~$0.01 | Wallet score, win rates, categories, last 20 trades. Param: `address` |
 | `predge_markets_movers` | ~$0.005 | Largest YES-price moves. Param: `window` (1h\|6h\|24h) |
-| `predge_signals_consensus` | ~$0.03 | Smart-money (score>70) net flow + direction per market |
+| `predge_signals_consensus` | ~$0.03 | Edge-verified smart-money net flow + direction per market |
 | `predge_attest` ⭐ | ~$0.02 | **Flagship.** Resolved-outcome attestation — the settled truth for a market (`resolved`, `resolution`, `resolved_at`). Optional `side` (yes\|no) checks whether a past signal/win-rate claim was actually right. Params: `condition_id`, `side` |
+| `predge_bets_biggest` | ~$0.005 | Top-20 largest single trades across all markets. Param: `window` (24h\|7d) |
+| `predge_signals_daily_category` | ~$0.01 | 24h digest scoped to one category. Param: `category` |
+| `predge_signals_consensus_category` | ~$0.02 | Consensus scoped to one category. Param: `category` |
+| `predge_signals_market` | ~$0.01 | Single-market smart-money verdict ("trust this move?"). Param: `condition_id` |
+| `predge_wallet_history` | ~$0.02 | Wallet trade history + running win-rate & PnL curve. Params: `address`, `window` (30d\|90d\|all) |
+| `predge_wallets_compare` | ~$0.02 | Compare 2-10 wallets side-by-side + market overlap. Param: `addresses` |
+| `predge_market_history` | ~$0.01 | Price/volume history for one market. Params: `condition_id`, `window` (7d\|30d\|all) |
 
-Every paid result includes a note with the on-chain settle tx.
+Every paid result includes a note with the on-chain settle tx. The two Kalshi routes
+(anonymous institutional flow) are not yet exposed as tools — they activate when Kalshi
+ingest is enabled; raw x402/HTTP already reaches them.
 
 ## Config (env)
 

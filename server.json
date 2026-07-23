@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.predgeAI/whale-data-mcp",
   "description": "Polymarket whale trades and smart-money signals as agent tools, paid per call via x402.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "websiteUrl": "https://data.predge.io",
   "repository": {
     "url": "https://github.com/predgeAI/whale-data-mcp",
@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "identifier": "@predge/whale-data-mcp",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "transport": {
         "type": "stdio"
       },
