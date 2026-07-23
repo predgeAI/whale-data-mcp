@@ -1,0 +1,11 @@
+src
+tests
+.github
+.git
+.code-review-graph
+*.map
+*.mcpb
+*.tsbuildinfo
+.env
+.env.*
+smithery.yaml
