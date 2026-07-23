@@ -38,7 +38,7 @@ claude mcp add predge-whale-data \
 }
 ```
 
-That's it — the agent gets **8 tools** (7 paid routes + 1 free discovery tool).
+That's it — the agent gets **9 tools** (8 paid routes + 1 free discovery tool).
 No API keys, no account; the buyer key pays USDC per call on Base. Fund it with a
 few dollars of USDC (the facilitator pays gas, so no ETH needed).
 
@@ -54,6 +54,7 @@ few dollars of USDC (the facilitator pays gas, so no ETH needed).
 | `predge_wallet_profile` | ~$0.01 | Wallet score, win rates, categories, last 20 trades. Param: `address` |
 | `predge_markets_movers` | ~$0.005 | Largest YES-price moves. Param: `window` (1h\|6h\|24h) |
 | `predge_signals_consensus` | ~$0.03 | Smart-money (score>70) net flow + direction per market |
+| `predge_attest` ⭐ | ~$0.02 | **Flagship.** Resolved-outcome attestation — the settled truth for a market (`resolved`, `resolution`, `resolved_at`). Optional `side` (yes\|no) checks whether a past signal/win-rate claim was actually right. Params: `condition_id`, `side` |
 
 Every paid result includes a note with the on-chain settle tx.
 
