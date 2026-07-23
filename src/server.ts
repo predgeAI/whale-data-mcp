@@ -1,6 +1,8 @@
 /**
- * Predge Whale Data MCP server. Exposes the 7 paid x402 routes as tools
+ * Predge Whale Data MCP server. Exposes the 8 paid x402 routes as tools
  * (payment handled under the hood by pay.ts) plus one free discovery tool.
+ * The flagship is predge_attest — resolved-outcome verification, Predge's
+ * one differentiating primitive (was this signal/win-rate claim actually right).
  * Transport-agnostic: index.ts wires it to stdio.
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -50,6 +52,8 @@ export function buildServer(): McpServer {
     {
       instructions:
         "Polymarket whale trades and smart-money signals from Predge, sold per call over x402. " +
+        "Flagship: predge_attest — resolved-outcome verification (the SETTLED truth for a market); " +
+        "use it to check whether a past signal, call, or win-rate claim was actually right. " +
         `Tools pay USDC automatically on ${IS_TESTNET ? "Base Sepolia testnet" : "Base mainnet"} from the ` +
         "configured buyer key (max $" + config.maxPriceUsd.toFixed(3) + "/call). Data is delayed 15 minutes. " +
         "Call predge_list_endpoints first (free) to see prices and schemas.",
@@ -166,6 +170,27 @@ export function buildServer(): McpServer {
       inputSchema: {},
     },
     async () => paid("/v1/signals/consensus"),
+  );
+
+  // --- flagship: resolved-outcome attestation -----------------------------
+  server.registerTool(
+    "predge_attest",
+    {
+      title: "Outcome attestation — verified settled truth (flagship)",
+      description:
+        "PAID (~$0.02). Resolved-outcome ATTESTATION for one Polymarket market: the SETTLED truth " +
+        "straight off the market row — resolved (bool), resolution (yes|no|null), resolved_at, and " +
+        "outcome_verified:{resolution:true}. Pure outcome-verified data — no modeled estimate anywhere. " +
+        "Optional side (yes|no): adds queried_side and correct (true iff side matches the resolved " +
+        "outcome) — use it to VERIFY whether a past signal, call, or advertised win-rate was actually " +
+        "right. Unknown/unresolvable market returns null and is NOT charged. Params: condition_id, side.",
+      inputSchema: {
+        condition_id: CONDITION_ID,
+        side: z.enum(["yes", "no"]).optional(),
+      },
+    },
+    async ({ condition_id, side }) =>
+      paid(`/v1/attest/${encodeURIComponent(condition_id)}${side ? `?side=${side}` : ""}`),
   );
 
   return server;
