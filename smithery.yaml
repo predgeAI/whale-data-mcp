@@ -1,0 +1,28 @@
+# Smithery config — https://smithery.ai/docs
+# Predge Whale Data is a stdio MCP server distributed on npm as
+# @predge/whale-data-mcp. Each user supplies their OWN funded Base-mainnet key;
+# the server signs USDC micropayments per call over x402. No account, no signup.
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      BUYER_PRIVATE_KEY:
+        type: string
+        title: Buyer private key
+        description: >-
+          Funded Base-mainnet EVM private key (0x…) the server uses to sign USDC
+          micropayments for paid tools. Omit to use only the free discovery tool.
+      MAX_PRICE_USD:
+        type: number
+        default: 0.05
+        description: Refuse any call priced above this (USD) before money moves.
+  commandFunction: |
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '@predge/whale-data-mcp'],
+      env: {
+        ...(config.BUYER_PRIVATE_KEY ? { BUYER_PRIVATE_KEY: config.BUYER_PRIVATE_KEY } : {}),
+        MAX_PRICE_USD: String(config.MAX_PRICE_USD ?? 0.05)
+      }
+    })
