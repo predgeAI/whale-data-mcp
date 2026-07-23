@@ -1,0 +1,42 @@
+{
+  "manifest_version": "0.2",
+  "name": "predge-whale-data",
+  "display_name": "Predge Whale Data",
+  "version": "0.1.5",
+  "description": "Outcome-verified Polymarket whale intelligence, pay-per-call over x402.",
+  "long_description": "16 tools (1 free discovery + 15 paid). Wallets ranked by outcome-verified win rate on RESOLVED markets (edge over market price x capital), smart-money consensus from proven winners, and a flagship /v1/attest that returns each settled market outcome as a cryptographically signed ed25519 receipt, verifiable offline. Pay-per-call over x402 (USDC on Base) - no accounts, no signup. You bring your OWN funded Base-mainnet key; it stays on this machine and never leaves.",
+  "author": { "name": "Predge", "url": "https://data.predge.io" },
+  "homepage": "https://data.predge.io",
+  "documentation": "https://github.com/predgeAI/whale-data-mcp",
+  "icon": "icon.png",
+  "license": "MIT",
+  "keywords": ["polymarket", "prediction-markets", "whales", "x402", "trading-signals", "attestation"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "BUYER_PRIVATE_KEY": "${user_config.buyer_private_key}",
+        "MAX_PRICE_USD": "${user_config.max_price_usd}"
+      }
+    }
+  },
+  "user_config": {
+    "buyer_private_key": {
+      "type": "string",
+      "title": "Buyer private key",
+      "description": "A funded Base-mainnet EVM private key (0x...) used to sign USDC micropayments per paid call. Stays on your machine. Leave empty to use only the free discovery tool.",
+      "sensitive": true,
+      "required": false
+    },
+    "max_price_usd": {
+      "type": "number",
+      "title": "Max price per call (USD)",
+      "description": "Refuse any call priced above this (USD) before money moves.",
+      "default": 0.05,
+      "required": false
+    }
+  }
+}
