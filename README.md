@@ -69,13 +69,23 @@ ingest is enabled; raw x402/HTTP already reaches them.
 
 ## Config (env)
 
+Paid tools need a funded key for **at least one rail** — Base (`BUYER_PRIVATE_KEY`)
+and/or Solana (`SOLANA_BUYER_SECRET`). Every paid route's 402 offers both networks;
+the client pays on whichever it holds a key for (cheapest when both). The
+facilitator pays the network fee on either rail — the wallet needs USDC only.
+
 | Var | Default | Notes |
 |---|---|---|
-| `BUYER_PRIVATE_KEY` | — | **Required for paid tools.** Funded buyer key. The free `predge_list_endpoints` tool works without it. |
-| `X402_NETWORK` | `base` | `base` = mainnet (real USDC). `base-sepolia` only works against a testnet deployment (see `PREDGE_BASE_URL`). |
-| `PREDGE_BASE_URL` | prod API | `https://x402-api-production-266e.up.railway.app`. Override to point at another deployment (e.g. a testnet instance). |
+| `BUYER_PRIVATE_KEY` | — | Funded **Base**-mainnet EVM key (`0x…`) for the Base rail. |
+| `SOLANA_BUYER_SECRET` | — | Optional. Funded **Solana**-mainnet key (64-number JSON array or base58) for the Solana rail. |
+| `X402_NETWORK` | `base` | Base network: `base` = mainnet (real USDC), `base-sepolia` only against a testnet deployment. |
+| `X402_SOLANA_NETWORK` | matches `X402_NETWORK` | `solana` (mainnet) or `solana-devnet`. |
+| `SOLANA_RPC_URL` | @x402/svm default | Optional custom Solana RPC (public mainnet-beta is rate-limited). |
+| `PREDGE_BASE_URL` | prod API | `https://x402-api-production-266e.up.railway.app`. Override to point at another deployment. |
 | `MAX_PRICE_USD` | `0.05` | Any call priced above this is refused **before** paying. |
 | `PREDGE_MCP_USER_AGENT` | `predge-whale-data-mcp/0.1.1` | Sent on every request (lets the API attribute MCP traffic). |
+
+> The free `predge_list_endpoints` tool works without any key.
 
 ### Testnet
 

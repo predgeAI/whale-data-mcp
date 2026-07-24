@@ -9,10 +9,16 @@ startCommand:
     properties:
       BUYER_PRIVATE_KEY:
         type: string
-        title: Buyer private key
+        title: Buyer private key (Base)
         description: >-
           Funded Base-mainnet EVM private key (0x…) the server uses to sign USDC
           micropayments for paid tools. Omit to use only the free discovery tool.
+      SOLANA_BUYER_SECRET:
+        type: string
+        title: Solana buyer secret (optional)
+        description: >-
+          Optional. Funded Solana-mainnet key (64-number JSON array or base58) to
+          ALSO pay on Solana. Either this or BUYER_PRIVATE_KEY enables paid tools.
       MAX_PRICE_USD:
         type: number
         default: 0.05
@@ -23,6 +29,7 @@ startCommand:
       args: ['-y', '@predge/whale-data-mcp'],
       env: {
         ...(config.BUYER_PRIVATE_KEY ? { BUYER_PRIVATE_KEY: config.BUYER_PRIVATE_KEY } : {}),
+        ...(config.SOLANA_BUYER_SECRET ? { SOLANA_BUYER_SECRET: config.SOLANA_BUYER_SECRET } : {}),
         MAX_PRICE_USD: String(config.MAX_PRICE_USD ?? 0.05)
       }
     })

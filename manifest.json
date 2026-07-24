@@ -2,24 +2,37 @@
   "manifest_version": "0.2",
   "name": "predge-whale-data",
   "display_name": "Predge Whale Data",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Outcome-verified Polymarket whale intelligence, pay-per-call over x402.",
-  "long_description": "16 tools (1 free discovery + 15 paid). Wallets ranked by outcome-verified win rate on RESOLVED markets (edge over market price x capital), smart-money consensus from proven winners, and a flagship /v1/attest that returns each settled market outcome as a cryptographically signed ed25519 receipt, verifiable offline. Pay-per-call over x402 (USDC on Base) - no accounts, no signup. You bring your OWN funded Base-mainnet key; it stays on this machine and never leaves.",
-  "author": { "name": "Predge", "url": "https://data.predge.io" },
+  "long_description": "16 tools (1 free discovery + 15 paid). Wallets ranked by outcome-verified win rate on RESOLVED markets (edge over market price x capital), smart-money consensus from proven winners, and a flagship /v1/attest that returns each settled market outcome as a cryptographically signed ed25519 receipt, verifiable offline. Pay-per-call over x402 (USDC on Base or Solana) - no accounts, no signup. You bring your OWN funded key (Base and/or Solana); it stays on this machine and never leaves.",
+  "author": {
+    "name": "Predge",
+    "url": "https://data.predge.io"
+  },
   "homepage": "https://data.predge.io",
   "documentation": "https://github.com/predgeAI/whale-data-mcp",
   "icon": "icon.png",
   "license": "MIT",
-  "keywords": ["polymarket", "prediction-markets", "whales", "x402", "trading-signals", "attestation"],
+  "keywords": [
+    "polymarket",
+    "prediction-markets",
+    "whales",
+    "x402",
+    "trading-signals",
+    "attestation"
+  ],
   "server": {
     "type": "node",
     "entry_point": "dist/index.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/dist/index.js"],
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
       "env": {
         "BUYER_PRIVATE_KEY": "${user_config.buyer_private_key}",
-        "MAX_PRICE_USD": "${user_config.max_price_usd}"
+        "MAX_PRICE_USD": "${user_config.max_price_usd}",
+        "SOLANA_BUYER_SECRET": "${user_config.solana_buyer_secret}"
       }
     }
   },
@@ -36,6 +49,13 @@
       "title": "Max price per call (USD)",
       "description": "Refuse any call priced above this (USD) before money moves.",
       "default": 0.05,
+      "required": false
+    },
+    "solana_buyer_secret": {
+      "type": "string",
+      "title": "Solana buyer secret",
+      "description": "Optional. A funded Solana-mainnet key (64-number JSON array or base58) to ALSO pay on Solana. Stays on your machine. Either this or the Base key enables paid tools.",
+      "sensitive": true,
       "required": false
     }
   }
