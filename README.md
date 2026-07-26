@@ -38,9 +38,9 @@ claude mcp add predge-whale-data \
 }
 ```
 
-That's it — the agent gets **16 tools** (15 paid routes + 1 free discovery tool).
-No API keys, no account; the buyer key pays USDC per call on Base. Fund it with a
-few dollars of USDC (the facilitator pays gas, so no ETH needed).
+That's it — the agent gets **17 tools** (16 paid routes + 1 free discovery tool).
+No API keys, no account; the buyer key pays USDC per call on Base or Solana. Fund it
+with a few dollars of USDC (the facilitator pays gas, so no ETH/SOL needed).
 
 ## Tools
 
@@ -55,6 +55,7 @@ few dollars of USDC (the facilitator pays gas, so no ETH needed).
 | `predge_markets_movers` | ~$0.005 | Largest YES-price moves. Param: `window` (1h\|6h\|24h) |
 | `predge_signals_consensus` | ~$0.03 | Edge-verified smart-money net flow + direction per market |
 | `predge_attest` ⭐ | ~$0.02 | **Flagship.** Resolved-outcome attestation — the settled truth for a market (`resolved`, `resolution`, `resolved_at`). Optional `side` (yes\|no) checks whether a past signal/win-rate claim was actually right. Params: `condition_id`, `side` |
+| `predge_sports_attest` ⭐ | ~$0.02 | **Flagship.** Ed25519-**signed** settled game outcome (winner, final score, `completed`) from ESPN, verifiable offline against Predge's published key. Optional `winner` (team abbr) → `correct`. Settle bets / prove a track record on tamper-evident truth. Leagues: nba, wnba, nfl, college-football, mlb, nhl, mls, epl, champions-league, laliga. Params: `league`, `event_id`, `winner` |
 | `predge_bets_biggest` | ~$0.005 | Top-20 largest single trades across all markets. Param: `window` (24h\|7d) |
 | `predge_signals_daily_category` | ~$0.01 | 24h digest scoped to one category. Param: `category` |
 | `predge_signals_consensus_category` | ~$0.02 | Consensus scoped to one category. Param: `category` |

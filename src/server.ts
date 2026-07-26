@@ -1,8 +1,10 @@
 /**
- * Predge Whale Data MCP server. Exposes the 8 paid x402 routes as tools
+ * Predge Whale Data MCP server. Exposes the paid x402 routes as tools
  * (payment handled under the hood by pay.ts) plus one free discovery tool.
- * The flagship is predge_attest — resolved-outcome verification, Predge's
- * one differentiating primitive (was this signal/win-rate claim actually right).
+ * The flagships are the signed attestations: predge_attest (resolved
+ * prediction-market outcome) and predge_sports_attest (ed25519-signed settled
+ * game result) — Predge's differentiating primitive: verify a claim/bet/
+ * win-rate against tamper-evident, offline-checkable settled truth.
  * Transport-agnostic: index.ts wires it to stdio.
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -52,8 +54,10 @@ export function buildServer(): McpServer {
     {
       instructions:
         "Polymarket whale trades and smart-money signals from Predge, sold per call over x402. " +
-        "Flagship: predge_attest — resolved-outcome verification (the SETTLED truth for a market); " +
-        "use it to check whether a past signal, call, or win-rate claim was actually right. " +
+        "Flagships: predge_attest — resolved prediction-market outcome (the SETTLED truth for a market); " +
+        "and predge_sports_attest — ed25519-SIGNED settled game result (winner/score) that verifies " +
+        "offline against Predge's published key. Use them to check whether a past signal, call, bet, or " +
+        "win-rate claim was actually right, or to settle/ground a wager on tamper-evident truth. " +
         `Tools pay USDC automatically on ${IS_TESTNET ? "Base Sepolia testnet" : "Base mainnet"} from the ` +
         "configured buyer key (max $" + config.maxPriceUsd.toFixed(3) + "/call). Data is delayed 15 minutes. " +
         "Call predge_list_endpoints first (free) to see prices and schemas.",
@@ -191,6 +195,46 @@ export function buildServer(): McpServer {
     },
     async ({ condition_id, side }) =>
       paid(`/v1/attest/${encodeURIComponent(condition_id)}${side ? `?side=${side}` : ""}`),
+  );
+
+  // --- flagship (sports vertical): signed settled game outcome -------------
+  server.registerTool(
+    "predge_sports_attest",
+    {
+      title: "Sports outcome attestation — signed settled game result (flagship)",
+      description:
+        "PAID (~$0.02). Ed25519-SIGNED settled game outcome for one finished match — winner, final " +
+        "score, completed(bool), teams, scheduled time — sourced from ESPN and signed with Predge's " +
+        "published key, so it VERIFIES OFFLINE (no trust in this API): re-check the signature against " +
+        "the pubkey at data.predge.io/.well-known/predge-attest.json. Use it to settle bets, prove a " +
+        "track record, or ground a wager on a tamper-evident result. Optional winner (team abbreviation " +
+        "e.g. 'LAL'): adds queried_winner and correct (true iff it matches the settled winner). Unknown " +
+        "league or unfinished/unknown event returns null and is NOT charged. " +
+        "Leagues: nba, wnba, nfl, college-football, mlb, nhl, mls, epl, champions-league, laliga. " +
+        "Params: league, event_id (provider event id), winner.",
+      inputSchema: {
+        league: z.enum([
+          "nba",
+          "wnba",
+          "nfl",
+          "college-football",
+          "mlb",
+          "nhl",
+          "mls",
+          "epl",
+          "champions-league",
+          "laliga",
+        ]),
+        event_id: z.string().regex(/^[0-9A-Za-z._-]{1,64}$/, "provider event id"),
+        winner: z.string().min(1).max(16).optional(),
+      },
+    },
+    async ({ league, event_id, winner }) =>
+      paid(
+        `/v1/sports/attest/${encodeURIComponent(league)}/${encodeURIComponent(event_id)}${
+          winner ? `?winner=${encodeURIComponent(winner)}` : ""
+        }`,
+      ),
   );
 
   // --- full route parity (the rest of the paid Polymarket surface) --------
