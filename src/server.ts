@@ -1,10 +1,12 @@
 /**
  * Predge Whale Data MCP server. Exposes the paid x402 routes as tools
  * (payment handled under the hood by pay.ts) plus one free discovery tool.
- * The flagships are the signed attestations: predge_attest (resolved
- * prediction-market outcome) and predge_sports_attest (ed25519-signed settled
- * game result) — Predge's differentiating primitive: verify a claim/bet/
- * win-rate against tamper-evident, offline-checkable settled truth.
+ * The flagships are the signed attestations — one ed25519 primitive across four
+ * verticals: predge_attest (resolved Polymarket outcome), predge_sports_attest
+ * (settled game result), predge_kalshi_attest (settled Kalshi resolution) and
+ * predge_wallet_attest (a wallet's win/loss track record). Predge's
+ * differentiating primitive: verify a claim/bet/win-rate against tamper-evident,
+ * offline-checkable settled truth.
  * Transport-agnostic: index.ts wires it to stdio.
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -54,10 +56,12 @@ export function buildServer(): McpServer {
     {
       instructions:
         "Polymarket whale trades and smart-money signals from Predge, sold per call over x402. " +
-        "Flagships: predge_attest — resolved prediction-market outcome (the SETTLED truth for a market); " +
-        "and predge_sports_attest — ed25519-SIGNED settled game result (winner/score) that verifies " +
-        "offline against Predge's published key. Use them to check whether a past signal, call, bet, or " +
-        "win-rate claim was actually right, or to settle/ground a wager on tamper-evident truth. " +
+        "Flagships — one ed25519 signing primitive across four verticals, all verifiable OFFLINE " +
+        "against Predge's published key: predge_attest (resolved Polymarket outcome), " +
+        "predge_sports_attest (settled game result, winner/score), predge_kalshi_attest (settled Kalshi " +
+        "market resolution) and predge_wallet_attest (a wallet's signed win/loss track record). Use them " +
+        "to check whether a past signal, call, bet, or win-rate claim was actually right, or to settle/" +
+        "ground a wager on tamper-evident truth. " +
         `Tools pay USDC automatically on ${IS_TESTNET ? "Base Sepolia testnet" : "Base mainnet"} from the ` +
         "configured buyer key (max $" + config.maxPriceUsd.toFixed(3) + "/call). Data is delayed 15 minutes. " +
         "Call predge_list_endpoints first (free) to see prices and schemas.",
@@ -235,6 +239,50 @@ export function buildServer(): McpServer {
           winner ? `?winner=${encodeURIComponent(winner)}` : ""
         }`,
       ),
+  );
+
+  // --- flagship (kalshi): signed settled market resolution ----------------
+  server.registerTool(
+    "predge_kalshi_attest",
+    {
+      title: "Kalshi outcome attestation — signed settled market resolution (flagship)",
+      description:
+        "PAID (~$0.02). Ed25519-SIGNED settled resolution for one Kalshi market — resolved(bool), " +
+        "resolution (yes|no|null), resolved_at — sourced from Kalshi's public market API and signed " +
+        "with Predge's published key, so it VERIFIES OFFLINE (no trust in this API): re-check the " +
+        "signature against the pubkey at data.predge.io/.well-known/predge-attest.json. This attests " +
+        "the MARKET's own settled result, NOT trader data. Optional side (yes|no): adds queried_side " +
+        "and correct (true iff it matches the resolution, null while unsettled). A market that has not " +
+        "settled yet returns resolved:false; an unknown ticker returns null and is NOT charged. " +
+        "Params: ticker (Kalshi market ticker), side.",
+      inputSchema: {
+        ticker: z.string().regex(/^[0-9A-Za-z._-]{1,128}$/, "Kalshi market ticker"),
+        side: z.enum(["yes", "no"]).optional(),
+      },
+    },
+    async ({ ticker, side }) =>
+      paid(`/v1/kalshi/attest/${encodeURIComponent(ticker)}${side ? `?side=${side}` : ""}`),
+  );
+
+  // --- flagship (wallet track-record): signed win/loss record -------------
+  server.registerTool(
+    "predge_wallet_attest",
+    {
+      title: "Wallet track-record attestation — signed win/loss record (flagship)",
+      description:
+        "PAID (~$0.02). Ed25519-SIGNED track record for one wallet over RESOLVED Polymarket markets — " +
+        "the wallet's outcome-verified win/loss record signed with Predge's published key, so it " +
+        "VERIFIES OFFLINE against the pubkey at data.predge.io/.well-known/predge-attest.json. Turns a " +
+        "self-reported win rate into signed, tamper-evident proof a third party can check. Param: " +
+        "window (7d|30d, default 30d). A wallet with no resolved trades in the window returns 404 and " +
+        "is NOT charged. Params: address (0x…), window.",
+      inputSchema: {
+        address: ADDRESS,
+        window: z.enum(["7d", "30d"]).optional(),
+      },
+    },
+    async ({ address, window }) =>
+      paid(`/v1/wallets/${encodeURIComponent(address)}/attest${window ? `?window=${window}` : ""}`),
   );
 
   // --- full route parity (the rest of the paid Polymarket surface) --------

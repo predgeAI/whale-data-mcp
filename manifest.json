@@ -2,9 +2,9 @@
   "manifest_version": "0.2",
   "name": "predge-whale-data",
   "display_name": "Predge Whale Data",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Outcome-verified prediction-market whale intelligence + signed settled sports outcomes, pay-per-call over x402.",
-  "long_description": "17 tools (1 free discovery + 16 paid). Wallets ranked by outcome-verified win rate on RESOLVED markets (edge over market price x capital), smart-money consensus from proven winners, and TWO flagship signed attestations: /v1/attest returns each settled Polymarket outcome, and /v1/sports/attest returns each finished game's result (winner + final score) - both as cryptographically signed ed25519 receipts, verifiable offline against Predge's published key. Use them to settle bets, prove a track record, or ground a wager on tamper-evident truth. Pay-per-call over x402 (USDC on Base or Solana) - no accounts, no signup. You bring your OWN funded key (Base and/or Solana); it stays on this machine and never leaves.",
+  "long_description": "19 tools (1 free discovery + 18 paid). Wallets ranked by outcome-verified win rate on RESOLVED markets (edge over market price x capital), smart-money consensus from proven winners, and FOUR flagship signed attestations built on ONE ed25519 primitive: /v1/attest (settled Polymarket outcome), /v1/sports/attest (finished game result, winner + final score), /v1/kalshi/attest (settled Kalshi market resolution), and /v1/wallets/{address}/attest (a wallet's win/loss track record) - all cryptographically signed and verifiable offline against Predge's published key. Use them to settle bets, prove a track record, or ground a wager on tamper-evident truth. Pay-per-call over x402 (USDC on Base or Solana) - no accounts, no signup. You bring your OWN funded key (Base and/or Solana); it stays on this machine and never leaves.",
   "author": {
     "name": "Predge",
     "url": "https://data.predge.io"
@@ -21,6 +21,7 @@
     "trading-signals",
     "attestation",
     "sports",
+    "kalshi",
     "betting",
     "outcome-verified"
   ],

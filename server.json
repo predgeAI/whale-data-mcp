@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.predgeAI/whale-data-mcp",
-  "description": "Signed settled outcomes (Polymarket + sports) + whale signals as agent tools, paid via x402.",
-  "version": "0.1.8",
+  "description": "Signed settled outcomes (Polymarket, sports, Kalshi) + whale signals as agent tools, paid via x402.",
+  "version": "0.1.9",
   "websiteUrl": "https://data.predge.io",
   "repository": {
     "url": "https://github.com/predgeAI/whale-data-mcp",
@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "identifier": "@predge/whale-data-mcp",
-      "version": "0.1.8",
+      "version": "0.1.9",
       "transport": {
         "type": "stdio"
       },
