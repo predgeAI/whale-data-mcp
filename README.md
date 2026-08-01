@@ -42,6 +42,29 @@ That's it — the agent gets **19 tools** (18 paid routes + 1 free discovery too
 No API keys, no account; the buyer key pays USDC per call on Base or Solana. Fund it
 with a few dollars of USDC (the facilitator pays gas, so no ETH/SOL needed).
 
+**ElizaOS** — add to your character file (via [`@fleek-platform/eliza-plugin-mcp`](https://github.com/fleek-platform/eliza-plugin-mcp)):
+
+```json
+{
+  "plugins": ["@fleek-platform/eliza-plugin-mcp"],
+  "settings": {
+    "mcp": {
+      "servers": {
+        "predge": {
+          "type": "stdio",
+          "command": "npx",
+          "args": ["-y", "@predge/whale-data-mcp"],
+          "env": { "BUYER_PRIVATE_KEY": "0xYOUR_FUNDED_BASE_MAINNET_KEY", "MAX_PRICE_USD": "0.05" }
+        }
+      }
+    }
+  }
+}
+```
+
+Set `MAX_PRICE_USD` to hard-cap spend — any call above it is refused before payment. Full
+integration guide (ElizaOS, Claude, raw x402 for non-MCP stacks, spend caps): **https://data.predge.io/agents**
+
 ## Tools
 
 | Tool | Price | Returns |
