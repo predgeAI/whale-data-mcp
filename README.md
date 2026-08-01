@@ -63,7 +63,7 @@ with a few dollars of USDC (the facilitator pays gas, so no ETH/SOL needed).
 ```
 
 Set `MAX_PRICE_USD` to hard-cap spend — any call above it is refused before payment. Full
-integration guide (ElizaOS, Claude, raw x402 for non-MCP stacks, spend caps): **https://data.predge.io/agents**
+integration guide: **https://data.predge.io**
 
 ## Tools
 
