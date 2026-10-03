@@ -77,7 +77,7 @@ function numEnv(name: string, def: number): number {
 const network = caip2(process.env.X402_NETWORK ?? "base");
 
 export const config = {
-  baseUrl: (process.env.PREDGE_BASE_URL ?? "https://x402-api-production-266e.up.railway.app").replace(/\/+$/, ""),
+  baseUrl: (process.env.PREDGE_BASE_URL ?? "https://api.predge.io").replace(/\/+$/, ""),
   // EVM (Base) buyer. Optional so the server + free discovery tool work without
   // a key; paid tools fail clearly if NO key (EVM or Solana) is set.
   buyerKey: process.env.BUYER_PRIVATE_KEY as `0x${string}` | undefined,
