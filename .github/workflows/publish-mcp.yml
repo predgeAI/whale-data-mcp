@@ -1,9 +1,12 @@
 name: Publish to npm + MCP Registry
 
 # Tag a release to publish: `git tag v0.1.1 && git push origin v0.1.1`
+# Run it by hand (Actions -> Run workflow) to retry the MCP Registry step for the
+# version on main, e.g. after npm was published from a laptop.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -27,9 +30,9 @@ jobs:
       # three (tag, package.json, server.json) must agree.
       - name: Check tag matches package.json and server.json
         run: |
-          TAG="${GITHUB_REF#refs/tags/v}"
           PKG=$(jq -r .version package.json)
           SRV=$(jq -r '.version, .packages[0].version' server.json | sort -u)
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then TAG="${GITHUB_REF#refs/tags/v}"; else TAG="$PKG"; fi
           echo "tag=$TAG package.json=$PKG server.json=$SRV"
           [ "$TAG" = "$PKG" ] || { echo "::error::tag v$TAG != package.json $PKG"; exit 1; }
           [ "$SRV" = "$TAG" ] || { echo "::error::server.json versions ($SRV) != tag $TAG"; exit 1; }
@@ -52,8 +55,17 @@ jobs:
       - name: Build package
         run: npm run build --if-present
 
+      # Skipped when this version is already on npm, so a retry only redoes the
+      # registry steps below.
       - name: Publish package to npm
-        run: npm publish --access public
+        run: |
+          NAME=$(jq -r .name package.json); PKG=$(jq -r .version package.json)
+          # Anonymous lookup: a stale NODE_AUTH_TOKEN must not turn the check into a 401.
+          if curl -sf "https://registry.npmjs.org/${NAME/\//%2f}/$PKG" > /dev/null; then
+            echo "$NAME@$PKG is already on npm, skipping"
+          else
+            npm publish --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
