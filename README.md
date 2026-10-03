@@ -107,7 +107,7 @@ facilitator pays the network fee on either rail — the wallet needs USDC only.
 | `X402_NETWORK` | `base` | Base network: `base` = mainnet (real USDC), `base-sepolia` only against a testnet deployment. |
 | `X402_SOLANA_NETWORK` | matches `X402_NETWORK` | `solana` (mainnet) or `solana-devnet`. |
 | `SOLANA_RPC_URL` | @x402/svm default | Optional custom Solana RPC (public mainnet-beta is rate-limited). |
-| `PREDGE_BASE_URL` | prod API | `https://x402-api-production-266e.up.railway.app`. Override to point at another deployment. |
+| `PREDGE_BASE_URL` | prod API | `https://api.predge.io`. Override to point at another deployment. |
 | `MAX_PRICE_USD` | `0.05` | Any call priced above this is refused **before** paying. |
 | `PREDGE_MCP_USER_AGENT` | `predge-whale-data-mcp/0.1.1` | Sent on every request (lets the API attribute MCP traffic). |
 
