@@ -1,0 +1,49 @@
+name: Claude Security Review
+
+# Security review of each PR diff with anthropics/claude-code-security-review.
+# Auth: this action only supports an Anthropic API key (ANTHROPIC_API_KEY secret);
+# it does not accept a Claude Code OAuth token. If the secret is missing, the job
+# skips with a notice instead of failing.
+# Only `pull_request` (never `pull_request_target`); fork PRs are skipped.
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions: {}
+
+concurrency:
+  group: claude-security-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  security:
+    if: |
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check auth secret
+        id: auth
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$KEY" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "::notice::ANTHROPIC_API_KEY is not set; skipping security review."; fi
+
+      - name: Checkout repository
+        if: steps.auth.outputs.ok == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Claude security review
+        if: steps.auth.outputs.ok == 'true'
+        uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda # main @ 2026-02-11 (no release tags)
+        with:
+          comment-pr: true
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
