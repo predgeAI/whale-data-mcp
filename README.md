@@ -1,7 +1,8 @@
 # @predge/whale-data-mcp
 
-MCP server that exposes the **Predge Whale Data** x402 API (Polymarket whale
-trades + smart-money signals) as tools. Payment is handled **under the hood**:
+MCP server that exposes the **Predge** API at `https://api.predge.io`
+(Polymarket whale trades, smart-money signals, signed attestations, and free
+signed UMA settlement risk) as tools. Payment is handled **under the hood**:
 each paid tool call signs a USDC micropayment via an x402 client — the agent
 just calls the tool and gets data back. You supply a funded buyer key.
 
@@ -38,7 +39,8 @@ claude mcp add predge-whale-data \
 }
 ```
 
-That's it — the agent gets **19 tools** (18 paid routes + 1 free discovery tool).
+That's it — the agent gets **21 tools** (18 paid routes + 3 free tools: discovery,
+settlement risk, record verification). The free tools need no key at all.
 No API keys, no account; the buyer key pays USDC per call on Base or Solana. Fund it
 with a few dollars of USDC (the facilitator pays gas, so no ETH/SOL needed).
 
@@ -70,10 +72,12 @@ integration guide (ElizaOS, Claude, raw x402 for non-MCP stacks, spend caps): **
 | Tool | Price | Returns |
 |---|---|---|
 | `predge_list_endpoints` | **free** | API description + every endpoint with its price/schema (call first) |
+| `predge_settlement_risk` | **free** | Signed live UMA settlement risk for one Polymarket market, read from Polygon: UMA state, current proposal + challenge window, every dispute, UMA-vote status, bulletin-board updates, on-chain resolution, `risk_level` (ok\|watch\|caution\|resolved), `settlement_estimate`, `segment_dispute_rate`. The tool re-verifies the ed25519 signature and returns `{ verification, record }`. Param: `market` (condition id, numeric market id, or slug). 60 req/min per IP |
+| `predge_verify_record` | **free** | Offline check of any Predge signed record (`predge-attest-v1`): `C(payload) == canonical`, `sha256(canonical) == content_hash`, ed25519 signature, `envelope_signature`, and signer listed active in [`predge-keys.json`](https://api.predge.io/.well-known/predge-keys.json). Param: `record` (JSON string) |
 | `predge_whales_latest` | ~$0.005 | Latest whale trades ≥$10k (15-min delay). Param: `limit` (1-100) |
 | `predge_whale_market` | ~$0.01 | 7-day whale activity for one market. Param: `condition_id` |
 | `predge_signals_daily` | ~$0.02 | 24h digest: top markets, net flow, largest bets |
-| `predge_wallets_leaderboard` | ~$0.01 | Wallets by realized win rate. Params: `window` (7d\|30d), `limit` |
+| `predge_wallets_leaderboard` | ~$0.01 | Wallets ranked by edge over resolved markets. Params: `window` (7d\|30d), `limit` |
 | `predge_wallet_profile` | ~$0.01 | Wallet score, win rates, categories, last 20 trades. Param: `address` |
 | `predge_markets_movers` | ~$0.005 | Largest YES-price moves. Param: `window` (1h\|6h\|24h) |
 | `predge_signals_consensus` | ~$0.03 | Edge-verified smart-money net flow + direction per market |
@@ -89,9 +93,20 @@ integration guide (ElizaOS, Claude, raw x402 for non-MCP stacks, spend caps): **
 | `predge_wallets_compare` | ~$0.02 | Compare 2-10 wallets side-by-side + market overlap. Param: `addresses` |
 | `predge_market_history` | ~$0.01 | Price/volume history for one market. Params: `condition_id`, `window` (7d\|30d\|all) |
 
-Every paid result includes a note with the on-chain settle tx. The two Kalshi routes
-(anonymous institutional flow) are not yet exposed as tools — they activate when Kalshi
-ingest is enabled; raw x402/HTTP already reaches them.
+Every paid result includes a note with the on-chain settle tx. Not exposed as tools
+(raw x402/HTTP reaches them; see `predge_list_endpoints`): the Kalshi flow routes, the
+`/v1/markets/:id/edge` polling pulse, the `/v1/onchain/*` routes, and the signed-calls /
+stakes / track-record routes. The old `/v1/signal` route is paused (503) and has no tool.
+
+### Verifying signed records yourself
+
+Every Predge signed record carries an `attestation` envelope. The rule is published at
+[data.predge.io/canonicalization.md](https://data.predge.io/canonicalization.md):
+`canonical` is the payload as JSON with keys sorted at every level and no whitespace;
+`content_hash = sha256(canonical)`; `signature` is ed25519 over the UTF-8 bytes of
+`canonical`; the signer must be an active key in
+`https://api.predge.io/.well-known/predge-keys.json` (attestation kid `13fa3d18a369e6c7`).
+`src/verify.ts` implements this with `node:crypto` only.
 
 ## Config (env)
 
@@ -107,11 +122,15 @@ facilitator pays the network fee on either rail — the wallet needs USDC only.
 | `X402_NETWORK` | `base` | Base network: `base` = mainnet (real USDC), `base-sepolia` only against a testnet deployment. |
 | `X402_SOLANA_NETWORK` | matches `X402_NETWORK` | `solana` (mainnet) or `solana-devnet`. |
 | `SOLANA_RPC_URL` | @x402/svm default | Optional custom Solana RPC (public mainnet-beta is rate-limited). |
-| `PREDGE_BASE_URL` | prod API | `https://api.predge.io`. Override to point at another deployment. |
+| `PREDGE_BASE_URL` | `https://api.predge.io` | Override to point at another deployment. `PREDGE_API_URL` is accepted as an alias. Signatures are always checked against the key set on `api.predge.io`. |
 | `MAX_PRICE_USD` | `0.05` | Any call priced above this is refused **before** paying. |
-| `PREDGE_MCP_USER_AGENT` | `predge-whale-data-mcp/0.1.1` | Sent on every request (lets the API attribute MCP traffic). |
+| `PREDGE_MCP_USER_AGENT` | `predge-whale-data-mcp/<version>` | Sent on every request (lets the API attribute MCP traffic). |
 
-> The free `predge_list_endpoints` tool works without any key.
+> The free tools (`predge_list_endpoints`, `predge_settlement_risk`, `predge_verify_record`) work without any key.
+
+> **Upgrading from 0.1.10 or older:** those versions default to a decommissioned API
+> host and every call fails with 404. Upgrade to 0.2.0 (`npx -y @predge/whale-data-mcp@latest`),
+> or set `PREDGE_BASE_URL=https://api.predge.io`.
 
 ### Testnet
 
@@ -142,8 +161,10 @@ cd whale-data-mcp && npm install && npm run build
 ## Verify locally
 
 ```bash
+npm test                                               # unit tests (no network, no payment)
 npm run inspect                                        # list tools (no payment)
 node dist/dev-list-tools.js predge_list_endpoints      # free call against prod
+node dist/dev-list-tools.js predge_settlement_risk '{"market":"<condition id or slug>"}'   # free, signed
 # paid call (spends real USDC on mainnet):
 BUYER_PRIVATE_KEY=0x… X402_NETWORK=base node dist/dev-list-tools.js predge_whales_latest '{"limit":2}'
 ```

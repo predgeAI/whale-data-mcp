@@ -76,8 +76,17 @@ function numEnv(name: string, def: number): number {
 
 const network = caip2(process.env.X402_NETWORK ?? "base");
 
+/** Package version; keep in sync with package.json (checked by `npm test`). */
+export const VERSION = "0.2.0";
+
+/** Live Predge API. Override with PREDGE_BASE_URL (or its alias PREDGE_API_URL). */
+export const DEFAULT_BASE_URL = "https://api.predge.io";
+
 export const config = {
-  baseUrl: (process.env.PREDGE_BASE_URL ?? "https://api.predge.io").replace(/\/+$/, ""),
+  baseUrl: (process.env.PREDGE_BASE_URL?.trim() || process.env.PREDGE_API_URL?.trim() || DEFAULT_BASE_URL).replace(
+    /\/+$/,
+    "",
+  ),
   // EVM (Base) buyer. Optional so the server + free discovery tool work without
   // a key; paid tools fail clearly if NO key (EVM or Solana) is set.
   buyerKey: process.env.BUYER_PRIVATE_KEY as `0x${string}` | undefined,
@@ -97,7 +106,7 @@ export const config = {
   solanaRpcUrl: process.env.SOLANA_RPC_URL?.trim() || undefined,
 
   maxPriceUsd: numEnv("MAX_PRICE_USD", 0.05),
-  userAgent: process.env.PREDGE_MCP_USER_AGENT ?? "predge-whale-data-mcp/0.1.1",
+  userAgent: process.env.PREDGE_MCP_USER_AGENT ?? `predge-whale-data-mcp/${VERSION}`,
 } as const;
 
 export const IS_TESTNET = config.network !== "eip155:8453";
