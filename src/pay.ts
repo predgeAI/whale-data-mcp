@@ -136,13 +136,16 @@ export async function payGet(path: string): Promise<PaidResult> {
   return { data, paid };
 }
 
-/** GET a FREE route (no payment) — used by the discovery tool. */
+/** GET a FREE route (no payment) — discovery, settlement risk, key set. */
 export async function freeGet(path: string): Promise<unknown> {
   const res = await fetch(`${config.baseUrl}${path}`, {
     method: "GET",
     headers: { "user-agent": config.userAgent },
     signal: AbortSignal.timeout(15_000),
   });
-  if (!res.ok) throw new Error(`upstream ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`upstream ${res.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
+  }
   return res.json();
 }
