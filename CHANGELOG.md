@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.1 — 2026-10-16
+
+### Changed
+- `settlement_estimate` moved out of the free settlement-risk record (API change
+  16.10). The free record now carries `settlement_estimate_available`;
+  `predge_settlement_risk` description and README updated.
+
+### Added
+- `predge_settlement_estimate` (paid, ~$0.02): `GET /v1/settlement-risk/:market/estimate`,
+  the signed record with `settlement_estimate`. The tool verifies the record and
+  returns `{ verification, record }`.
+
 ## 0.2.0 — 2026-10-14
 
 ### Fixed
