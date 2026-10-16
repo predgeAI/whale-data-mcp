@@ -408,8 +408,10 @@ export function buildServer(): McpServer {
         "FREE, no key or payment. Live UMA settlement risk for one Polymarket market, read from UMA's " +
         "Optimistic Oracle and Polymarket's UMA CTF adapter on Polygon: uma_state, current proposal and " +
         "challenge window, every dispute, whether it went to a UMA vote, bulletin-board updates, on-chain " +
-        "resolution, risk_level (ok|watch|caution|resolved) with a one-line recommendation, plus " +
-        "settlement_estimate and segment_dispute_rate statistics. The record is ed25519-signed " +
+        "resolution, risk_level (ok|watch|caution|resolved) with a one-line recommendation, plus the " +
+        "segment_dispute_rate statistic and a settlement_estimate_available flag. The settlement_estimate " +
+        "itself is NOT in this free record: it is sold by predge_settlement_estimate " +
+        "(GET /v1/settlement-risk/:market/estimate, ~$0.02). The record is ed25519-signed " +
         "(predge-attest-v1); this tool re-checks the signature, content hash and signer key and returns " +
         "the result under `verification`. A dispute blocks a proposal; it does not by itself change the " +
         "outcome. 404 unknown_market and 422 unsupported_* are NOT 'no risk' answers. Rate limit 60/min per IP. " +
@@ -426,6 +428,38 @@ export function buildServer(): McpServer {
           verification = { valid: false, error: e instanceof Error ? e.message : String(e) };
         }
         return ok({ verification, record }, null);
+      } catch (e) {
+        return fail(e);
+      }
+    },
+  );
+
+  // --- paid: signed settlement-risk record WITH settlement_estimate ---------
+  server.registerTool(
+    "predge_settlement_estimate",
+    {
+      title: "Settlement risk + settlement_estimate — signed (paid)",
+      description:
+        "PAID (~$0.02 via x402). The same signed live UMA settlement-risk record as the free " +
+        "predge_settlement_risk tool, WITH settlement_estimate: a statistic computed from 2026 Polymarket " +
+        "UMA disputes (market price before the first dispute + market type). A statistic, not advice. " +
+        "GET /v1/settlement-risk/:market/estimate. The tool re-checks the ed25519 signature and returns " +
+        "`{ verification, record }`. Call predge_settlement_risk first (free) and check " +
+        "settlement_estimate_available before paying. Param: market (condition id 0x+64 hex, numeric market id, or slug).",
+      inputSchema: { market: SETTLEMENT_MARKET },
+    },
+    async ({ market }) => {
+      try {
+        const { data: record, paid: receipt } = await payGet(
+          `/v1/settlement-risk/${encodeURIComponent(market)}/estimate`,
+        );
+        let verification: unknown;
+        try {
+          verification = verifyEnvelope(extractEnvelope(record), await predgeKeys());
+        } catch (e) {
+          verification = { valid: false, error: e instanceof Error ? e.message : String(e) };
+        }
+        return ok({ verification, record }, receipt);
       } catch (e) {
         return fail(e);
       }

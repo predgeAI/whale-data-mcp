@@ -77,7 +77,7 @@ function numEnv(name: string, def: number): number {
 const network = caip2(process.env.X402_NETWORK ?? "base");
 
 /** Package version; keep in sync with package.json (checked by `npm test`). */
-export const VERSION = "0.2.0";
+export const VERSION = "0.2.1";
 
 /** Live Predge API. Override with PREDGE_BASE_URL (or its alias PREDGE_API_URL). */
 export const DEFAULT_BASE_URL = "https://api.predge.io";

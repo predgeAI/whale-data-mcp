@@ -53,6 +53,7 @@ test("tool list matches the live API surface", async () => {
     "predge_list_endpoints",
     "predge_market_history",
     "predge_markets_movers",
+    "predge_settlement_estimate",
     "predge_settlement_risk",
     "predge_signals_consensus",
     "predge_signals_consensus_category",
