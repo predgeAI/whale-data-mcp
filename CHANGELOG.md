@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 — 2026-10-18
+
+### Removed
+- `predge_kalshi_attest`: Kalshi was dropped from Predge and `/v1/kalshi/attest`
+  now returns 404. Tool, docs and manifest/server.json mentions removed (21 tools).
+
 ## 0.2.1 — 2026-10-16
 
 ### Changed

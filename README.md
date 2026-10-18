@@ -84,7 +84,6 @@ integration guide (ElizaOS, Claude, raw x402 for non-MCP stacks, spend caps): **
 | `predge_signals_consensus` | ~$0.03 | Edge-verified smart-money net flow + direction per market |
 | `predge_attest` ⭐ | ~$0.02 | **Flagship.** Resolved-outcome attestation — the settled truth for a market (`resolved`, `resolution`, `resolved_at`). Optional `side` (yes\|no) checks whether a past signal/win-rate claim was actually right. Params: `condition_id`, `side` |
 | `predge_sports_attest` ⭐ | ~$0.02 | **Flagship.** Ed25519-**signed** settled game outcome (winner, final score, `completed`) from ESPN, verifiable offline against Predge's published key. Optional `winner` (team abbr) → `correct`. Settle bets / prove a track record on tamper-evident truth. Leagues: nba, wnba, nfl, college-football, mlb, nhl, mls, epl, champions-league, laliga. Params: `league`, `event_id`, `winner` |
-| `predge_kalshi_attest` ⭐ | ~$0.02 | **Flagship.** Ed25519-**signed** settled Kalshi market resolution (`resolved`, `resolution` yes\|no, `resolved_at`) from Kalshi's public API, verifiable offline. Attests the market's own result, not trader data. Optional `side` (yes\|no) → `correct`. Params: `ticker`, `side` |
 | `predge_wallet_attest` ⭐ | ~$0.02 | **Flagship.** Ed25519-**signed** wallet win/loss track record over resolved markets, verifiable offline — turns a self-reported win rate into signed proof. Param: `window` (7d\|30d, default 30d). Params: `address`, `window` |
 | `predge_bets_biggest` | ~$0.005 | Top-20 largest single trades across all markets. Param: `window` (24h\|7d) |
 | `predge_signals_daily_category` | ~$0.01 | 24h digest scoped to one category. Param: `category` |
@@ -95,7 +94,7 @@ integration guide (ElizaOS, Claude, raw x402 for non-MCP stacks, spend caps): **
 | `predge_market_history` | ~$0.01 | Price/volume history for one market. Params: `condition_id`, `window` (7d\|30d\|all) |
 
 Every paid result includes a note with the on-chain settle tx. Not exposed as tools
-(raw x402/HTTP reaches them; see `predge_list_endpoints`): the Kalshi flow routes, the
+(raw x402/HTTP reaches them; see `predge_list_endpoints`): the
 `/v1/markets/:id/edge` polling pulse, the `/v1/onchain/*` routes, and the signed-calls /
 stakes / track-record routes. The old `/v1/signal` route is paused (503) and has no tool.
 

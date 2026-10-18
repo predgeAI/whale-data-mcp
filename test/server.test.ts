@@ -49,7 +49,6 @@ test("tool list matches the live API surface", async () => {
   assert.deepEqual(names, [
     "predge_attest",
     "predge_bets_biggest",
-    "predge_kalshi_attest",
     "predge_list_endpoints",
     "predge_market_history",
     "predge_markets_movers",

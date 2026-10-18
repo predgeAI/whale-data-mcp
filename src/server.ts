@@ -1,10 +1,9 @@
 /**
  * Predge Whale Data MCP server. Exposes the paid x402 routes as tools
  * (payment handled under the hood by pay.ts) plus one free discovery tool.
- * The flagships are the signed attestations — one ed25519 primitive across four
+ * The flagships are the signed attestations — one ed25519 primitive across three
  * verticals: predge_attest (resolved Polymarket outcome), predge_sports_attest
- * (settled game result), predge_kalshi_attest (settled Kalshi resolution) and
- * predge_wallet_attest (a wallet's win/loss track record). Predge's
+ * (settled game result) and predge_wallet_attest (a wallet's win/loss track record). Predge's
  * differentiating primitive: verify a claim/bet/win-rate against tamper-evident,
  * offline-checkable settled truth.
  * Transport-agnostic: index.ts wires it to stdio.
@@ -80,10 +79,9 @@ export function buildServer(): McpServer {
     {
       instructions:
         "Polymarket whale trades and smart-money signals from Predge, sold per call over x402. " +
-        "Flagships — one ed25519 signing primitive across four verticals, all verifiable OFFLINE " +
+        "Flagships — one ed25519 signing primitive across three verticals, all verifiable OFFLINE " +
         "against Predge's published key: predge_attest (resolved Polymarket outcome), " +
-        "predge_sports_attest (settled game result, winner/score), predge_kalshi_attest (settled Kalshi " +
-        "market resolution) and predge_wallet_attest (a wallet's signed win/loss track record). Use them " +
+        "predge_sports_attest (settled game result, winner/score) and predge_wallet_attest (a wallet's signed win/loss track record). Use them " +
         "to check whether a past signal, call, bet, or win-rate claim was actually right, or to settle/" +
         "ground a wager on tamper-evident truth. " +
         `Tools pay USDC automatically on ${IS_TESTNET ? "Base Sepolia testnet" : "Base mainnet"} from the ` +
@@ -265,29 +263,6 @@ export function buildServer(): McpServer {
           winner ? `?winner=${encodeURIComponent(winner)}` : ""
         }`,
       ),
-  );
-
-  // --- flagship (kalshi): signed settled market resolution ----------------
-  server.registerTool(
-    "predge_kalshi_attest",
-    {
-      title: "Kalshi outcome attestation — signed settled market resolution (flagship)",
-      description:
-        "PAID (~$0.02). Ed25519-SIGNED settled resolution for one Kalshi market — resolved(bool), " +
-        "resolution (yes|no|null), resolved_at — sourced from Kalshi's public market API and signed " +
-        "with Predge's published key, so it VERIFIES OFFLINE (no trust in this API): re-check the " +
-        "signature against the pubkey at data.predge.io/.well-known/predge-attest.json. This attests " +
-        "the MARKET's own settled result, NOT trader data. Optional side (yes|no): adds queried_side " +
-        "and correct (true iff it matches the resolution, null while unsettled). A market that has not " +
-        "settled yet returns resolved:false; an unknown ticker returns null and is NOT charged. " +
-        "Params: ticker (Kalshi market ticker), side.",
-      inputSchema: {
-        ticker: z.string().regex(/^[0-9A-Za-z._-]{1,128}$/, "Kalshi market ticker"),
-        side: z.enum(["yes", "no"]).optional(),
-      },
-    },
-    async ({ ticker, side }) =>
-      paid(`/v1/kalshi/attest/${encodeURIComponent(ticker)}${side ? `?side=${side}` : ""}`),
   );
 
   // --- flagship (wallet track-record): signed win/loss record -------------
@@ -476,7 +451,7 @@ export function buildServer(): McpServer {
         "re-canonicalises to `canonical`, sha256(canonical) == content_hash, ed25519 signature over " +
         "canonical, envelope_signature when present, and that public_key is an active key in " +
         "api.predge.io/.well-known/predge-keys.json (the only network call; it is cached). Works on " +
-        "responses from predge_settlement_risk, predge_attest, predge_sports_attest, predge_kalshi_attest, " +
+        "responses from predge_settlement_risk, predge_attest, predge_sports_attest, " +
         "predge_wallet_attest, or a bare `attestation` envelope. Param: record (the JSON, as a string).",
       inputSchema: { record: z.string().min(2).max(1_000_000) },
     },
