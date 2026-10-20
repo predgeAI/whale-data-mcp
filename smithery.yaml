@@ -19,6 +19,13 @@ startCommand:
         description: >-
           Optional. Funded Solana-mainnet key (64-number JSON array or base58) to
           ALSO pay on Solana. Either this or BUYER_PRIVATE_KEY enables paid tools.
+      PREDGE_KEY:
+        type: string
+        title: Predge key (optional)
+        description: >-
+          Pilot key from https://predge.io/start (settlement estimate and
+          delivery verdicts free for 30 days, verdict report) or a Desk key from
+          https://predge.io/desk. Sent as the x-predge-key header.
       MAX_PRICE_USD:
         type: number
         default: 0.05
@@ -30,6 +37,7 @@ startCommand:
       env: {
         ...(config.BUYER_PRIVATE_KEY ? { BUYER_PRIVATE_KEY: config.BUYER_PRIVATE_KEY } : {}),
         ...(config.SOLANA_BUYER_SECRET ? { SOLANA_BUYER_SECRET: config.SOLANA_BUYER_SECRET } : {}),
+        ...(config.PREDGE_KEY ? { PREDGE_KEY: config.PREDGE_KEY } : {}),
         MAX_PRICE_USD: String(config.MAX_PRICE_USD ?? 0.05)
       }
     })

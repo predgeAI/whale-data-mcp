@@ -49,6 +49,9 @@ test("tool list matches the live API surface", async () => {
   assert.deepEqual(names, [
     "predge_attest",
     "predge_bets_biggest",
+    "predge_desk_config",
+    "predge_get_verdict",
+    "predge_key_status",
     "predge_list_endpoints",
     "predge_market_history",
     "predge_markets_movers",
@@ -60,8 +63,9 @@ test("tool list matches the live API surface", async () => {
     "predge_signals_daily_category",
     "predge_signals_market",
     "predge_sports_attest",
+    "predge_verdict",
+    "predge_verdict_report",
     "predge_verify_record",
-    "predge_wallet_attest",
     "predge_wallet_history",
     "predge_wallet_profile",
     "predge_wallets_compare",
@@ -69,4 +73,26 @@ test("tool list matches the live API surface", async () => {
     "predge_whale_market",
     "predge_whales_latest",
   ]);
+});
+
+test("no tool, description or metadata advertises a paused route", async () => {
+  const server = buildServer();
+  const [c, s] = InMemoryTransport.createLinkedPair();
+  await server.connect(s);
+  const client = new Client({ name: "test", version: "0" });
+  await client.connect(c);
+  const { tools } = await client.listTools();
+  await client.close();
+  const paused = /wallet_attest|\/attest\b.*wallet|wallets\/[^ ]*\/attest|pm-activity|pm-flows|\/v1\/signal\//;
+  for (const t of tools) assert.doesNotMatch(`${t.name} ${t.description ?? ""}`, paused, t.name);
+  for (const f of ["manifest.json", "server.json", "smithery.yaml"]) assert.doesNotMatch(read(f), paused, f);
+});
+
+test("PREDGE_KEY is declared as a secret in server.json, manifest.json and smithery.yaml", () => {
+  const env = JSON.parse(read("server.json")).packages[0].environmentVariables as Array<{ name: string; isSecret?: boolean }>;
+  assert.equal(env.find((e) => e.name === "PREDGE_KEY")?.isSecret, true);
+  const man = JSON.parse(read("manifest.json"));
+  assert.equal(man.server.mcp_config.env.PREDGE_KEY, "${user_config.predge_key}");
+  assert.equal(man.user_config.predge_key.sensitive, true);
+  assert.match(read("smithery.yaml"), /PREDGE_KEY/);
 });

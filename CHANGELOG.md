@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.3.0 — 2026-10-20
+
+### Added
+- `PREDGE_KEY` (optional): sent as `x-predge-key` on every request. A pilot key
+  from https://predge.io/start makes the settlement estimate and delivery verdicts
+  free for 30 days; a Desk key from https://predge.io/desk opens the Desk routes.
+  The key goes first, so a covered call never pays. Never logged; an API error that
+  echoes it is redacted. Declared (secret) in server.json, manifest.json, smithery.yaml.
+- `predge_verdict`: signed delivery verdict ("was the paid job delivered?").
+  `POST /v1/verdicts` ($0.05) when `payment.amount_usd` < 1, `POST /v1/verdicts/large`
+  ($0.50) when >= 1. Input mirrors the OpenAPI schema (job, delivery, payment,
+  buyer_id, merchant_id, agent, provider_agent). Returns `{ verification, record }`.
+- `predge_get_verdict` (free): `GET /v1/verdicts/:id`, re-verified.
+- `predge_verdict_report` (free, needs `PREDGE_KEY`): `GET /v1/verdicts/report?month=YYYY-MM`.
+- `predge_key_status` (free, needs `PREDGE_KEY`): `GET /v1/me`.
+- `predge_desk_config` (free, needs a Desk key): `GET /v1/desk/config`.
+- Tests against a mocked API (`test/tools.test.ts`): key header, verdict tier routing,
+  402 explanation, key redaction, key-only tools.
+
+### Changed
+- A 402 that nothing paid for now returns the API's explanation (price, networks, how
+  to pay, pilot key link, `X-Predge-Pilot`) as a readable tool error. Paid tools no
+  longer refuse locally when no buyer key is set: the request goes out (a key may
+  cover it) and a 402 is explained.
+- Upstream errors carry the API's JSON error body in `structuredContent.error`.
+- Results include `predge_key` (pilot status, quota) when the API reports it.
+
+### Removed
+- `predge_wallet_attest`: `/v1/wallets/:address/attest` is paused
+  (503 `signed_wallet_outputs_paused`). 25 tools (7 free + 18 paid).
+
 ## 0.2.2 — 2026-10-18
 
 ### Removed
