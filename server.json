@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.predgeAI/whale-data-mcp",
-  "description": "Signed settled outcomes (Polymarket, sports) + whale signals as agent tools, paid via x402.",
-  "version": "0.2.2",
+  "description": "Signed delivery verdicts for agent payments, Polymarket settlement risk and whale data, via x402.",
+  "version": "0.3.0",
   "websiteUrl": "https://data.predge.io",
   "repository": {
     "url": "https://github.com/predgeAI/whale-data-mcp",
@@ -12,14 +12,21 @@
     {
       "registryType": "npm",
       "identifier": "@predge/whale-data-mcp",
-      "version": "0.2.2",
+      "version": "0.3.0",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
           "name": "BUYER_PRIVATE_KEY",
-          "description": "Funded Base-mainnet key that signs USDC micropayments. Either this or SOLANA_BUYER_SECRET enables paid tools; the free tools (discovery, settlement risk, record verification) need neither.",
+          "description": "Funded Base-mainnet key that signs USDC micropayments. Either this or SOLANA_BUYER_SECRET enables paid tools; the free tools (discovery, settlement risk, verdict re-read, record verification) need neither, and PREDGE_KEY covers the calls its pilot includes.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "PREDGE_KEY",
+          "description": "Optional Predge key, sent as x-predge-key on every request. A free 30-day pilot key (predge.io/start) makes the settlement estimate and delivery verdicts free and unlocks the verdict report; a Desk key (predge.io/desk) unlocks predge_desk_config.",
           "isRequired": false,
           "isSecret": true,
           "format": "string"
@@ -41,7 +48,7 @@
         },
         {
           "name": "SOLANA_BUYER_SECRET",
-          "description": "Funded Solana-mainnet key (64-number JSON array or base58) to also pay on Solana. Optional \u2014 either this or BUYER_PRIVATE_KEY enables paid tools.",
+          "description": "Funded Solana-mainnet key (64-number JSON array or base58) to also pay on Solana. Optional — either this or BUYER_PRIVATE_KEY enables paid tools.",
           "isRequired": false,
           "isSecret": true,
           "format": "string"

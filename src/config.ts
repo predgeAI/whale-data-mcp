@@ -77,7 +77,7 @@ function numEnv(name: string, def: number): number {
 const network = caip2(process.env.X402_NETWORK ?? "base");
 
 /** Package version; keep in sync with package.json (checked by `npm test`). */
-export const VERSION = "0.2.2";
+export const VERSION = "0.3.0";
 
 /** Live Predge API. Override with PREDGE_BASE_URL (or its alias PREDGE_API_URL). */
 export const DEFAULT_BASE_URL = "https://api.predge.io";
@@ -106,6 +106,12 @@ export const config = {
   solanaRpcUrl: process.env.SOLANA_RPC_URL?.trim() || undefined,
 
   maxPriceUsd: numEnv("MAX_PRICE_USD", 0.05),
+  // Optional Predge key, sent as `x-predge-key` on every request: a pilot key from
+  // https://predge.io/start (settlement estimate + verdicts free for 30 days, verdict
+  // report) or a Desk key from https://predge.io/desk. Read at call time; never logged.
+  get predgeKey(): string | undefined {
+    return process.env.PREDGE_KEY?.trim() || undefined;
+  },
   userAgent: process.env.PREDGE_MCP_USER_AGENT ?? `predge-whale-data-mcp/${VERSION}`,
 } as const;
 
