@@ -12,6 +12,28 @@ just calls the tool and gets data back. You supply a funded buyer key.
 > `MAX_PRICE_USD` ($0.05 by default) *before* any money moves. Use a dedicated,
 > low-balance buyer wallet.
 
+## Get a free key
+
+Free pilot key in a minute: https://predge.io/start (no card)
+
+With the MCP server: `claude mcp add predge-whale-data -e PREDGE_KEY=pdg_pilot_... -- npx -y @predge/whale-data-mcp` (no wallet needed for the calls the key covers, see [Optional: a Predge key](#optional-a-predge-key-predge_key) below).
+
+First call over plain HTTP: a signed delivery verdict for a paid agent call.
+
+```bash
+export PREDGE_KEY=pdg_pilot_...   # from predge.io/start
+curl -s https://api.predge.io/v1/verdicts \
+  -H 'content-type: application/json' \
+  -H "x-predge-key: $PREDGE_KEY" \
+  -d '{"job":{"endpoint":"https://api.example.com/v1/report","expected_content_type":"application/json","required_fields":["rows"]},
+       "delivery":{"status":200,"headers":{"content-type":"application/json"},"body":"{\"rows\":[1]}"},
+       "payment":{"amount_usd":0.25,"payer":"0xBuyer","payee":"0xMerchant"}}'
+```
+
+The response carries `verdict` (`delivered` / `not_delivered` / `inconclusive`), `reason_codes`, an ed25519 `attestation` and a `verify_url`. Docs: [predge.io/docs#verdicts](https://predge.io/docs#verdicts).
+
+No key? Pay per call over x402 instead: the same request without `x-predge-key` answers 402 with the price ($0.05), payable in USDC by any x402 client.
+
 ## Install (one command)
 
 **Claude Code:**
