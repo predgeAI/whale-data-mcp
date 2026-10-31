@@ -155,7 +155,7 @@ Every Predge signed record carries an `attestation` envelope. The rule is publis
 `canonical` is the payload as JSON with keys sorted at every level and no whitespace;
 `content_hash = sha256(canonical)`; `signature` is ed25519 over the UTF-8 bytes of
 `canonical`; the signer must be an active key in
-`https://api.predge.io/.well-known/predge-keys.json` (attestation kid `13fa3d18a369e6c7`).
+`https://api.predge.io/.well-known/predge-keys.json` (current attestation kid `3b6551a6439b9bda`; `13fa3d18a369e6c7` was revoked on 21 Oct 2026).
 `src/verify.ts` implements this with `node:crypto` only.
 
 ## Config (env)
